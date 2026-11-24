@@ -1,0 +1,146 @@
+/*cartel 848x1200 en una noche de niebla: el titular y la carta viven en webgl y se borran; la fecha y las marcas son html y siempre se leen*/
+
+/*fuentes locales para que el cartel se vea igual sin internet*/
+/*Fraunces: serif con cursivas expresivas para el mensaje y "de diciembre"*/
+@font-face{font-family:"Fraunces";src:url("assets/fonts/fraunces-latin-700-normal.woff2") format("woff2");font-weight:700;font-display:block}
+@font-face{font-family:"Fraunces";src:url("assets/fonts/fraunces-latin-600-italic.woff2") format("woff2");font-weight:600;font-style:italic;font-display:block}
+@font-face{font-family:"Fraunces";src:url("assets/fonts/fraunces-latin-700-italic.woff2") format("woff2");font-weight:700;font-style:italic;font-display:block}
+/*Black Ops One: el 21, letra de plantilla (estarcido) como la de las cajas de envio*/
+@font-face{font-family:"Black Ops One";src:url("assets/fonts/black-ops-one-latin-400-normal.woff2") format("woff2");font-weight:400;font-display:block}
+/*Bricolage Grotesque: textos pequeños y etiquetas*/
+@font-face{font-family:"Bricolage Grotesque";src:url("assets/fonts/bricolage-grotesque-latin-500-normal.woff2") format("woff2");font-weight:500;font-display:block}
+@font-face{font-family:"Bricolage Grotesque";src:url("assets/fonts/bricolage-grotesque-latin-700-normal.woff2") format("woff2");font-weight:700;font-display:block}
+/*letra de niño para la carta y letra de adulto para la respuesta*/
+@font-face{font-family:"Schoolbell";src:url("assets/fonts/schoolbell-latin-400-normal.woff2") format("woff2");font-weight:400;font-display:block}
+@font-face{font-family:"Reenie Beanie";src:url("assets/fonts/reenie-beanie-latin-400-normal.woff2") format("woff2");font-weight:400;font-display:block}
+
+/*colores del cartel; los del dibujo se repiten en main.js*/
+:root{
+  color-scheme:dark;
+  --noche:#0b0f1e;
+  --crema:#f3efe6;
+  --oro:#f5c35a;
+  --blanco:#ffffff;
+  --sombra:rgba(0,0,0,.4);
+  --mesa:#05070d;
+  --serif:"Fraunces",Georgia,"Times New Roman",serif;
+  --texto:"Bricolage Grotesque","Helvetica Neue",Arial,sans-serif;
+}
+
+*{box-sizing:border-box;margin:0}
+html{height:100%}
+body{
+  min-height:100%;
+  display:flex;justify-content:center;align-items:flex-start;
+  padding-block:16px;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));
+  padding-right:max(16px, env(safe-area-inset-right, 0px));
+  background:var(--mesa);
+  color:var(--crema);
+}
+
+/*marco: main.js le pone el ancho y alto ya escalados*/
+.marco{position:relative;width:848px;height:1200px;flex:none}
+
+/*cartel: tamaño fijo, se escala entero con transform para no deformar nada*/
+.cartel{
+  position:absolute;top:0;left:0;
+  width:848px;height:1200px;
+  transform-origin:0 0;
+  overflow:hidden;
+  background:var(--noche);
+  color:var(--crema);
+  cursor:none;
+}
+
+/*capas 1 y 2: los dos canvas ocupan el cartel entero y no reciben el raton*/
+/*capa 0: el cielo; la imagen es el doble de grande para pantallas retina*/
+.cielo{position:absolute;inset:0;z-index:0;background:var(--noche) url("assets/cielo.webp") center/848px 1200px no-repeat}
+
+.escena,.nieve{position:absolute;inset:0;width:848px;height:1200px;pointer-events:none}
+/*transparente: la niebla de webgl deja ver el cielo*/
+.escena{z-index:1}
+.nieve{z-index:2}
+
+/*capa 3: luz calida; main.js la mueve con transform y cambia su opacity*/
+.luz{
+  position:absolute;left:0;top:0;z-index:3;
+  width:360px;height:360px;margin:-180px 0 0 -180px;
+  border-radius:50%;
+  background:radial-gradient(circle, rgba(255,190,110,.42) 0%, rgba(255,150,80,.14) 35%, rgba(255,150,80,0) 70%);
+  mix-blend-mode:screen;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .4s, width .5s, height .5s, margin .5s;
+}
+/*el cursor del sistema esta oculto: este aro nitido marca el punto exacto (la luz le sigue con suavidad)*/
+.punto{
+  position:absolute;left:0;top:0;z-index:6;
+  width:16px;height:16px;margin:-8px 0 0 -8px;
+  border:1.5px solid var(--crema);border-radius:50%;
+  box-shadow:0 0 6px var(--sombra);
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .3s;
+}
+
+/*capa 4: texto html*/
+.lectura{position:absolute;inset:0;z-index:4;pointer-events:none}
+
+.cabecera{
+  position:absolute;top:34px;left:40px;right:40px;
+  display:flex;justify-content:space-between;
+  font:700 12px/1 var(--texto);
+  letter-spacing:.14em;text-transform:uppercase;
+}
+
+.fecha{
+  position:absolute;top:640px;left:40px;width:340px;
+  font:400 250px/.78 var(--serif);
+  white-space:nowrap;
+  transition:color .6s;
+}
+.dia,.mes{display:block}
+/*la plantilla es mas baja que la serif: se agranda sin cambiar el alto de la linea para que "de diciembre" no baje*/
+.dia{font:400 284px/195px "Black Ops One",Impact,var(--serif);letter-spacing:-.03em}
+/*"de diciembre" en cursiva, mas pequeño, pegado al numero*/
+.mes{margin-top:-6px;font:italic 600 50px/1 var(--serif);letter-spacing:0}
+
+.columna{
+  position:absolute;left:40px;top:912px;width:356px;
+  display:flex;flex-direction:column;gap:16px;
+}
+.frase{font:500 17px/1.4 var(--texto)}
+.pista{font:700 11px/1.6 var(--texto);letter-spacing:.14em;text-transform:uppercase;transition:opacity .4s}
+
+/*pie: la linea mide lo mismo que la del logo de itaca (2px) y pasa justo por ella*/
+.pie{
+  position:absolute;left:40px;right:40px;bottom:23px;height:81px;
+  border-top:2px solid var(--blanco);
+  display:flex;justify-content:flex-end;align-items:flex-end;
+}
+/*logo de 131px de alto: su linea horizontal empieza a 50px de arriba; se sube 52px (50 + el borde) para que caiga encima de la del pie*/
+.logo-itaca{position:absolute;left:0;top:-52px;height:131px;width:auto}
+
+/*logo sobre blanco para que sus colores se lean sobre la noche*/
+.pegatina{padding:10px 14px 9px;border-radius:3px;background:var(--blanco);box-shadow:2px 3px 8px var(--sombra)}
+.pegatina img{display:block;height:26px;width:auto}
+
+/*caja invisible encima del sobre cerrado (413x283, centro en 612,892): mismo giro que la carta (-3.44 grados = -0.06 rad en main.js)*/
+.zona-carta{
+  position:absolute;left:405.5px;top:750.5px;width:413px;height:283px;z-index:5;
+  transform:rotate(-3.44deg);
+  outline:none;
+}
+/*con el sobre abierto cubre la carta levantada y el sobre que queda detras*/
+.zona-carta.abierta{left:405px;top:652px;width:414px;height:420px}
+/*con teclado se ve que la carta tiene el foco*/
+.zona-carta:focus-visible{outline:2px dashed var(--oro);outline-offset:8px}
+
+/*visible solo para lectores de pantalla*/
+.solo-lectores{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+
+/*sin movimiento: el cartel no se borra (main.js lo comprueba) y la luz no se anima*/
+@media (prefers-reduced-motion:reduce){
+  .luz,.punto,.fecha,.pista{transition:none}
+}

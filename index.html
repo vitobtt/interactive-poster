@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cartel ITACA 21D</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!--el marco ocupa el tamaño ya escalado; el cartel siempre mide 848x1200-->
+<main class="marco" id="marco">
+  <article class="cartel" id="cartel">
+
+    <!--el titular en texto para lectores de pantalla, el primero del documento; main.js lo cambia junto con el dibujo-->
+    <h1 class="solo-lectores" id="titular">Esta Navidad hay niños que solo piden que alguien se acuerde de ellos.</h1>
+
+    <!--capa 0: el cielo (foto de la via lactea, girada y retocada)-->
+    <div class="cielo" aria-hidden="true"></div>
+
+    <!--capa 1: el cartel que se olvida (webgl). la niebla, el titular y el sobre se dibujan aqui; es transparente para que se vea el cielo-->
+    <canvas class="escena" id="escena" aria-hidden="true"></canvas>
+
+    <!--capa 2: nieve que se aparta al pasar el raton-->
+    <canvas class="nieve" id="nieve" aria-hidden="true"></canvas>
+
+    <!--capa 3: la luz calida que sigue al cursor-->
+    <div class="luz" id="luz" aria-hidden="true"></div>
+
+    <!--capa 4: texto que nunca se borra (fecha, mensaje pequeño, marcas)-->
+    <div class="lectura">
+      <header class="cabecera">
+        <p>Fundación ITACA · L'Hospitalet</p>
+        <p>Campaña de regalos de Navidad 2026</p>
+      </header>
+
+      <!--fecha obligatoria-->
+      <p class="fecha" id="fecha"><span class="dia">21</span><span class="mes">de diciembre</span></p>
+
+      <div class="columna">
+        <p class="frase">Niños sin familia o de familias que no pueden comprar ni un solo regalo. Este cartel se borra si nadie lo mira. Como ellos.</p>
+        <p class="pista" id="pista">Mueve el ratón: tu luz lo recuerda<br>Pasa por el sobre y ábrelo</p>
+      </div>
+
+      <footer class="pie">
+        <!--la linea horizontal del logo continua en la linea del pie-->
+        <img class="logo-itaca" src="assets/logo-itaca.webp" alt="Associació Educativa Itaca">
+        <div class="pegatina"><img src="assets/logo-planetafp.webp" alt="PlanetaFP"></div>
+      </footer>
+    </div>
+
+    <!--el sobre con la carta del niño: esta caja invisible, girada como el sobre, recibe mouseenter y mouseleave (y el foco del teclado)-->
+    <!--abierta crece hasta cubrir la carta-->
+    <div class="zona-carta" id="zona-carta" tabindex="0" role="button" aria-label="Abrir el sobre y leer la carta del niño"></div>
+
+    <!--el punto exacto del cursor, por encima de todo-->
+    <div class="punto" id="punto" aria-hidden="true"></div>
+
+  </article>
+</main>
+
+<!--three.js va en local para que el cartel funcione sin internet y abriendo el archivo directamente-->
+<script src="libs/three.min.js"></script>
+<!--el sobre: texturas y geometria (three.js)-->
+<script src="sobre/texturas.js"></script>
+<script src="sobre/sobre.js"></script>
+<script src="main.js"></script>
+</body>
+</html>
